@@ -23,7 +23,7 @@ export class ProductsService {
   }
 
   async findUserProducts(userId: string) {
-    const product = await this.productModel.find({ createdBy: new ObjectId(userId) }).exec();
+    const product = await this.productModel.find({ createdBy: new Types.ObjectId(userId) }).exec();
     console.log("userId----",product, userId)
     return product;
   }
