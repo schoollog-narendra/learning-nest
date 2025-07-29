@@ -12,7 +12,11 @@ export class UsersService {
     return this.userModel.find().select('-__v').exec();
   }
 
-  async create(userData: { name: string; email: string; password: string }): Promise<User> {
+  async create(userData: { name: string; email: string; password: string }): Promise<User | {error:string}> {
+    const existingUser = await this.userModel.findOne({ email: userData.email }).exec();
+    if (existingUser) {
+      return { error: 'User already exists' };
+    }
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const newUser = new this.userModel({
       ...userData,

@@ -11,6 +11,13 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('my-products')
+  async getMyProducts(@Req() req) {
+    return this.productsService.findUserProducts(req.user.sub);
+  }
+
+
   @Get(':id')
   async getProduct(@Param('id') id: string) {
     return this.productsService.findOne(id);
@@ -22,11 +29,7 @@ export class ProductsController {
     return this.productsService.create(body, req.user.sub);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('my-products')
-  async getMyProducts(@Req() req) {
-    return this.productsService.findUserProducts(req.user.sub);
-  }
+  
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')

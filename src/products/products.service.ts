@@ -16,14 +16,16 @@ export class ProductsService {
     return this.productModel.find().populate('createdBy', 'name email').exec();
   }
 
-  async findOne(id: string) {
-    const product = await this.productModel.findById(id).populate('createdBy', 'name email').exec();
+  async findOne(_id: string) {
+    const product = await this.productModel.findById(_id).populate('createdBy', 'name email').exec();
     if (!product) throw new NotFoundException('Product not found');
     return product;
   }
 
   async findUserProducts(userId: string) {
-    return this.productModel.find({ createdBy: userId }).exec();
+    const product = await this.productModel.find({ createdBy: new ObjectId(userId) }).exec();
+    console.log("userId----",product, userId)
+    return product;
   }
 
   async update(id: string, data: any, userId: string) {
