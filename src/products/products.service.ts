@@ -13,7 +13,7 @@ export class ProductsService {
   }
 
   async findAll() {
-    return this.productModel.find().populate('createdBy', 'name email').exec();
+    return this.productModel.find().sort({createdAt: -1}).populate('createdBy', 'name email').exec();
   }
 
   async findOne(_id: string) {

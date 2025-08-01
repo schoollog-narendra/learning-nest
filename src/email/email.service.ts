@@ -1,54 +1,23 @@
+
 import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { validateEmailConfig } from '../config/email.config';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  constructor(private mailerService: MailerService) {}
+  private transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD, // Use Gmail App Password
+    },
+  });
 
-  async sendUserCreatedNotification(userData: { name: string; email: string }) {
-    // Check if email credentials are configured
-    if (!validateEmailConfig()) {
-      console.log('📧 Email notification skipped - credentials not configured');
-      console.log(`📋 User created: ${userData.name} (${userData.email})`);
-      return;
-    }
-
-    try {
-      const htmlContent = this.generateEmailTemplate(userData);
-      
-      // Check if mailer service is properly configured
-      if (!this.mailerService) {
-        console.log('📧 Email notification skipped - mailer service not available');
-        console.log(`📋 User created: ${userData.name} (${userData.email})`);
-        return;
-      }
-      
-      await this.mailerService.sendMail({
-        to: "schoollog.narendra@gmail.com",
-        subject: 'New User Registration - SchoolLog',
-        html: htmlContent,
-      });
-      
-      console.log('✅ Email notification sent successfully');
-    } catch (error) {
-      console.error('❌ Failed to send email notification:', error.message);
-      console.log(`📋 User created: ${userData.name} (${userData.email})`);
-      
-      // Log additional error details for debugging
-      if (error.code) {
-        console.error('Error code:', error.code);
-      }
-      if (error.command) {
-        console.error('Failed command:', error.command);
-      }
-    }
-  }
-
-  private generateEmailTemplate(userData: { name: string; email: string }): string {
+  async sendMail(userData:{name: string, email: string}) {
     const registrationDate = new Date().toLocaleDateString();
-    
-    return `
+    const mailOptions = {
+      to:"narendra011670@gmail.com",
+      subject:"New User Registration - SchoolLog",
+      html:`
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -179,6 +148,17 @@ export class EmailService {
         </div>
     </body>
     </html>
-    `;
+    `, // Optional
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Mail sent:', info.response);
+      return info;
+    } catch (error) {
+      console.error('Error sending mail:', error);
+      throw error;
+    }
   }
-} 
+}
+ 

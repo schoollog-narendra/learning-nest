@@ -7,9 +7,9 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     UsersModule,
-    JwtModule.register({
-      secret: 'mysecretkey', // ideally use process.env.JWT_SECRET
-      signOptions: { expiresIn: '1d' },
+    JwtModule.registerAsync({
+      useFactory:()=>({secret: process.env.JWT_SECRET , // ideally use process.env.
+        signOptions: { expiresIn: '1d' },})
     }),
   ],
   providers: [AuthService],

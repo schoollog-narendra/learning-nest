@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { EmailService } from '../email/email.service';
+import e from 'express';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +32,7 @@ export class UsersService {
     
     // Send email notification
     try {
-      await this.emailService.sendUserCreatedNotification({
+      await this.emailService.sendMail({
         name: userData.name,
         email: userData.email,
       });

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple File Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple File Upload Test</h1>
+    
+    <div class="container">
+        <h2>Authentication</h2>
+        <div class="form-group">
+            <label for="jwtToken">JWT Token:</label>
+            <input type="text" id="jwtToken" placeholder="Enter your JWT token">
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Upload Image</h2>
+        <div class="form-group">
+            <label for="fileInput">Select Image File:</label>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <button id="uploadBtn">Upload Image</button>
+        <div id="uploadResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        function getAuthHeaders() {
+            const token = document.getElementById('jwtToken').value;
+            if (!token) {
+                throw new Error('JWT token is required');
+            }
+            return {
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        function showResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.style.display = 'block';
+        }
+
+        async function uploadFile() {
+            console.log('Upload function called');
+            
+            try {
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    showResult('uploadResult', 'Please select a file', true);
+                    return;
+                }
+
+                console.log('File selected:', file.name);
+                
+                const formData = new FormData();
+                formData.append('file', file);
+
+                console.log('Sending request to:', `${API_BASE}/upload/single`);
+                
+                const response = await fetch(`${API_BASE}/upload/single`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('Response received:', result);
+                
+                if (response.ok) {
+                    console.log('Upload successful, showing result');
+                    showResult('uploadResult', JSON.stringify(result, null, 2));
+                } else {
+                    console.log('Upload failed:', result.message);
+                    showResult('uploadResult', `Error: ${result.message}`, true);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showResult('uploadResult', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Simple event listener
+        document.getElementById('uploadBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadFile();
+        });
+    </script>
+</body>
+</html> 
