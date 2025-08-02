@@ -12,9 +12,33 @@ export class ProductsService {
     return newProduct.save();
   }
 
-  async findAll() {
-    return this.productModel.find().sort({createdAt: -1}).populate('createdBy', 'name email').exec();
+ async findAll({ minPrice, maxPrice , page , searchString , limit  }) {
+  const filterQuery: any = {
+    price: { $gte: minPrice, $lte: maxPrice },
+  };
+
+  if (searchString?.trim().length>0) {
+    filterQuery['$or'] = [
+      { name: { $regex: searchString, $options: "i" } },
+      { description: { $regex: searchString, $options: "i" } },
+    ];
   }
+
+  const totalCount = await this.productModel.countDocuments(filterQuery);
+  const data = await this.productModel
+    .find(filterQuery)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    
+
+  return {
+    data,
+    totalPages: Math.ceil(totalCount / limit),
+    totalCount
+  };
+}
+
 
   async findOne(_id: string) {
     const product = await this.productModel.findById(_id).populate('createdBy', 'name email').exec();
@@ -24,7 +48,6 @@ export class ProductsService {
 
   async findUserProducts(userId: string) {
     const product = await this.productModel.find({ createdBy: new Types.ObjectId(userId) }).exec();
-    console.log("userId----",product, userId)
     return product;
   }
 

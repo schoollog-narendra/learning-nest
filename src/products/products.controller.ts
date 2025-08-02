@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards, Req } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Req, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -7,9 +8,15 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  async getAllProducts() {
-    return this.productsService.findAll();
-  }
+  async getAllProducts(
+  @Query('maxPrice') maxPrice: number = Infinity, 
+  @Query('minPrice') minPrice: number = 0, 
+  @Query('page') page: number = 1, 
+  @Query('searchString') searchString: string = '', 
+  @Query('limit') limit: number = 10
+) {
+  return this.productsService.findAll({minPrice:Number(minPrice), maxPrice:Number(maxPrice), page:Number(page), searchString, limit:Number(limit)});
+}
 
   @UseGuards(JwtAuthGuard)
   @Get('my-products')
